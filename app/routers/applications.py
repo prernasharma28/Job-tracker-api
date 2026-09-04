@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..database import SessionLocal
 from ..models import ApplicationDB
-from ..schemas import ApplicationRequest, ApplicationResponse
+from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus
 
 
 router = APIRouter(
@@ -38,10 +38,16 @@ def create_application(
 
 
 @router.get("", response_model=list[ApplicationResponse])
-def get_applications(db=Depends(get_db)):
-    applications = db.query(ApplicationDB).all()
+def get_applications(
+    status: ApplicationStatus | None = None,
+    db=Depends(get_db)
+):
+    query = db.query(ApplicationDB)
 
-    return applications
+    if status:
+        query = query.filter(ApplicationDB.status == status.value)
+
+    return query.all()
 
 
 @router.get("/{application_id}", response_model=ApplicationResponse)
