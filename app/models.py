@@ -1,0 +1,18 @@
+from datetime import datetime
+
+from sqlalchemy import Column, Integer, String, DateTime
+from .database import Base
+
+class ApplicationDB(Base): # SQLAlchemy model for the applications table
+    __tablename__ = "applications"
+
+    id = Column(Integer, primary_key=True, index=True) # Every application will have a unique ID
+    company = Column(String)
+    role = Column(String)
+    status = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )

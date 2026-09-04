@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.idea/
+.vscode/
+job_tracker.db
