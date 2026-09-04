@@ -50,10 +50,10 @@ def get_applications(
         query = query.filter(ApplicationDB.status == status.value)
 
     if company:
-        query = query.filter(ApplicationDB.company == company)
+        query = query.filter(ApplicationDB.company.ilike(f"%{company}%"))
 
     if role:
-        query = query.filter(ApplicationDB.role == role)
+        query = query.filter(ApplicationDB.role.ilike(f"%{role}%"))
 
     return query.all()
 
