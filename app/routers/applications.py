@@ -40,12 +40,20 @@ def create_application(
 @router.get("", response_model=list[ApplicationResponse])
 def get_applications(
     status: ApplicationStatus | None = None,
+    company: str | None = None,
+    role: str | None = None,
     db=Depends(get_db)
 ):
     query = db.query(ApplicationDB)
 
     if status:
         query = query.filter(ApplicationDB.status == status.value)
+
+    if company:
+        query = query.filter(ApplicationDB.company.ilike(f"%{company}%"))
+
+    if role:
+        query = query.filter(ApplicationDB.role.ilike(f"%{role}%"))
 
     return query.all()
 
