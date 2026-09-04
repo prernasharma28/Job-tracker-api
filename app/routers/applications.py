@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from ..database import SessionLocal
 from ..models import ApplicationDB
@@ -42,6 +42,8 @@ def get_applications(
     status: ApplicationStatus | None = None,
     company: str | None = None,
     role: str | None = None,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     db=Depends(get_db)
 ):
     query = db.query(ApplicationDB)
@@ -54,6 +56,11 @@ def get_applications(
 
     if role:
         query = query.filter(ApplicationDB.role.ilike(f"%{role}%"))
+    
+    offset = (page - 1) * limit
+
+    query = query.order_by(ApplicationDB.id)
+    query = query.offset(offset).limit(limit)
 
     return query.all()
 
