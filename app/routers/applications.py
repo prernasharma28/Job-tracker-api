@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from ..database import SessionLocal
 from ..models import ApplicationDB
-from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus, SortOrder
-from sqlalchemy import or_
+from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus, SortOrder, ApplicationStatsResponse
+from sqlalchemy import or_, func
 
 
 router = APIRouter(
@@ -98,6 +98,25 @@ def get_applications(
 
     return query.all()
 
+@router.get("/stats", response_model=ApplicationStatsResponse)
+def get_application_stats(db=Depends(get_db)):
+    total_applications = db.query(ApplicationDB).count()
+
+    status_counts = db.query(
+        ApplicationDB.status,
+        func.count(ApplicationDB.id)
+    ).group_by(ApplicationDB.status).all()
+
+    company_counts = db.query(
+        ApplicationDB.company,
+        func.count(ApplicationDB.id)
+    ).group_by(ApplicationDB.company).all()
+
+    return {
+        "total_applications": total_applications,
+        "status_counts": dict(status_counts),  # Convert list of tuples to dictionary
+        "company_counts": dict(company_counts)  
+    }
 
 @router.get("/{application_id}", response_model=ApplicationResponse)
 def get_application(
