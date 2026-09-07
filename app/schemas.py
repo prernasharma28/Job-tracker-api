@@ -3,6 +3,10 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from enum import Enum
 
+class SortOrder(str, Enum):
+    ASC = "asc",
+    DSC = "dsc"
+
 class ApplicationStatus(str, Enum):
     APPLIED = "Applied"
     INTERVIEW = "Interview"

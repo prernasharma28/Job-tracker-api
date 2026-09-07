@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from ..database import SessionLocal
 from ..models import ApplicationDB
-from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus
+from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus, SortOrder
+from sqlalchemy import or_
 
 
 router = APIRouter(
@@ -42,10 +43,22 @@ def get_applications(
     status: ApplicationStatus | None = None,
     company: str | None = None,
     role: str | None = None,
+    search: str | None = None,
+    sort_by: str | None = None,
+    order: SortOrder | None = SortOrder.ASC,
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
     db=Depends(get_db)
 ):
+
+    sort_columns = {
+        "id": ApplicationDB.id,
+        "company": ApplicationDB.company,
+        "role": ApplicationDB.role,
+        "status": ApplicationDB.status,
+        "created_at": ApplicationDB.created_at
+    }
+
     query = db.query(ApplicationDB)
 
     if status:
@@ -56,10 +69,31 @@ def get_applications(
 
     if role:
         query = query.filter(ApplicationDB.role.ilike(f"%{role}%"))
-    
+
+    if search:
+        query = query.filter(
+            or_(
+                ApplicationDB.company.ilike(f"%{search}%"),
+                ApplicationDB.role.ilike(f"%{search}%")
+            )
+        )
+
     offset = (page - 1) * limit
 
-    query = query.order_by(ApplicationDB.id)
+    if sort_by:
+        sort_column = sort_columns.get(sort_by)
+
+        if sort_column is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid sort_by value: {sort_by}. Valid values are: {', '.join(sort_columns.keys())}"
+            )
+        
+        if order == "desc":
+            query = query.order_by(sort_column.desc())
+        else:
+            query = query.order_by(sort_column.asc())
+
     query = query.offset(offset).limit(limit)
 
     return query.all()
