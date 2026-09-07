@@ -3,6 +3,11 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from enum import Enum
 
+class ApplicationStatsResponse(BaseModel):
+    total_applications: int
+    status_counts: dict[str, int]
+    company_counts: dict[str, int]
+
 class SortOrder(str, Enum):
     ASC = "asc",
     DSC = "dsc"
