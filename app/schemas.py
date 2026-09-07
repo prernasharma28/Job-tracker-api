@@ -3,6 +3,16 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from enum import Enum
 
+class UserCreate(BaseModel):
+    email: str 
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    email : str # do not add password schema bcz we dont want to expose password in response
+    created_at: datetime
+
+
 class ApplicationStatsResponse(BaseModel):
     total_applications: int
     status_counts: dict[str, int]
