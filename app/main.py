@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from .database import engine, Base
-from .routers import applications
+from .routers import applications, auth
 
 
 app = FastAPI()
@@ -9,6 +9,7 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
 app.include_router(applications.router)
+app.include_router(auth.router)
 
 
 @app.get("/")
