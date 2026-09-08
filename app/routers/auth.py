@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from ..database import SessionLocal
 from ..models import UserDB
 from ..schemas import UserCreate, UserResponse
-from ..security import hash_password, verify_password
+from ..security import hash_password, verify_password, create_access_token
 
 router = APIRouter(
     prefix="/auth",
@@ -55,11 +55,12 @@ def login_user(user: UserCreate, db=Depends(get_db)):
             detail="Invalid email or password"
         )
     
+    access_token = create_access_token({
+        "user_id": existing_user.id,
+        "email": existing_user.email
+    })
+    
     return {
-        "message": "Login Successful",
-        "user": {
-            "id": existing_user.id,
-            "email": existing_user.email,
-            "created_at": existing_user.created_at
+            "access_token": access_token,
+            "token_type": "bearer"
         }
-    }

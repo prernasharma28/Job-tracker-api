@@ -4,7 +4,7 @@ from ..database import SessionLocal
 from ..models import ApplicationDB
 from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus, SortOrder, ApplicationStatsResponse
 from sqlalchemy import or_, func
-
+from app.security import get_current_user
 
 router = APIRouter(
     prefix="/applications",
@@ -23,9 +23,11 @@ def get_db():
 @router.post("", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
 def create_application(
     application: ApplicationRequest,
+    current_user=Depends(get_current_user),
     db=Depends(get_db)
 ):
     new_application = ApplicationDB(
+        user_id=current_user["user_id"],
         company=application.company,
         role=application.role,
         status=application.status
@@ -48,6 +50,7 @@ def get_applications(
     order: SortOrder | None = SortOrder.ASC,
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
+    current_user=Depends(get_current_user),
     db=Depends(get_db)
 ):
 
@@ -59,7 +62,9 @@ def get_applications(
         "created_at": ApplicationDB.created_at
     }
 
-    query = db.query(ApplicationDB)
+    query = db.query(ApplicationDB).filter(
+        ApplicationDB.user_id == current_user["user_id"]
+    )
 
     if status:
         query = query.filter(ApplicationDB.status == status.value)
@@ -99,17 +104,26 @@ def get_applications(
     return query.all()
 
 @router.get("/stats", response_model=ApplicationStatsResponse)
-def get_application_stats(db=Depends(get_db)):
-    total_applications = db.query(ApplicationDB).count()
+def get_application_stats(
+    current_user=Depends(get_current_user),
+    db=Depends(get_db)
+):
+    total_applications = db.query(ApplicationDB).filter(
+        ApplicationDB.user_id == current_user["user_id"]
+    ).count()
 
     status_counts = db.query(
         ApplicationDB.status,
         func.count(ApplicationDB.id)
+    ).filter(
+        ApplicationDB.user_id == current_user["user_id"]
     ).group_by(ApplicationDB.status).all()
 
     company_counts = db.query(
         ApplicationDB.company,
         func.count(ApplicationDB.id)
+    ).filter(
+        ApplicationDB.user_id == current_user["user_id"]
     ).group_by(ApplicationDB.company).all()
 
     return {
@@ -121,10 +135,12 @@ def get_application_stats(db=Depends(get_db)):
 @router.get("/{application_id}", response_model=ApplicationResponse)
 def get_application(
     application_id: int,
+    current_user=Depends(get_current_user),
     db=Depends(get_db)
 ):
     application = db.query(ApplicationDB).filter(
-        ApplicationDB.id == application_id
+        ApplicationDB.id == application_id,
+        ApplicationDB.user_id == current_user["user_id"]
     ).first()
 
     if application is None:
@@ -140,10 +156,12 @@ def get_application(
 def update_application(
     application_id: int,
     application: ApplicationRequest,
+    current_user=Depends(get_current_user),
     db=Depends(get_db)
 ):
     existing_application = db.query(ApplicationDB).filter(
-        ApplicationDB.id == application_id
+        ApplicationDB.id == application_id,
+        ApplicationDB.user_id == current_user["user_id"]
     ).first()
 
     if existing_application is None:
@@ -164,10 +182,12 @@ def update_application(
 @router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_application(
     application_id: int,
+    current_user=Depends(get_current_user),
     db=Depends(get_db)
 ):
     application = db.query(ApplicationDB).filter(
-        ApplicationDB.id == application_id
+        ApplicationDB.id == application_id,
+        ApplicationDB.user_id == current_user["user_id"]
     ).first()
 
     if application is None:
@@ -178,7 +198,3 @@ def delete_application(
 
     db.delete(application)
     db.commit()
-
-    return {
-        "message": f"Application with ID {application_id} deleted successfully"
-    }
