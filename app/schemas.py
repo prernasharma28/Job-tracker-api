@@ -3,6 +3,9 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from enum import Enum
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
 class UserCreate(BaseModel):
     email: str 
     password: str
