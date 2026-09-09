@@ -4,5 +4,4 @@ __pycache__/
 .env
 .idea/
 .vscode/
-job_tracker.db
-test_job_tracker.db
+*db
