@@ -5,6 +5,7 @@ from ..models import ApplicationDB
 from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus, SortOrder, ApplicationStatsResponse
 from sqlalchemy import or_, func
 from app.security import get_current_user
+from app.exceptions import ApplicationNotFoundException
 
 router = APIRouter(
     prefix="/applications",
@@ -144,10 +145,7 @@ def get_application(
     ).first()
 
     if application is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Application with ID {application_id} not found"
-        )
+        raise ApplicationNotFoundException()
 
     return application
 
@@ -165,10 +163,7 @@ def update_application(
     ).first()
 
     if existing_application is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Application with ID {application_id} not found"
-        )
+        raise ApplicationNotFoundException()
 
     existing_application.company = application.company
     existing_application.role = application.role
@@ -182,8 +177,8 @@ def update_application(
 @router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_application(
     application_id: int,
-    current_user=Depends(get_current_user),
-    db=Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     application = db.query(ApplicationDB).filter(
         ApplicationDB.id == application_id,
@@ -191,10 +186,7 @@ def delete_application(
     ).first()
 
     if application is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Application with ID {application_id} not found"
-        )
+        raise ApplicationNotFoundException()
 
     db.delete(application)
     db.commit()
