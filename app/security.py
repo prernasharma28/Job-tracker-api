@@ -17,6 +17,8 @@ pwd_context = CryptContext(
 )
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not configured")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 # After 30 minutes, the token will expire and the user will need to log in again to get a new token.
 REFRESH_TOKEN_EXPIRE_DAYS = 7
