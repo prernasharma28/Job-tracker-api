@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
@@ -6,8 +5,12 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-
-load_dotenv()
+from app.config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    REFRESH_TOKEN_EXPIRE_DAYS,
+)
 
 security = HTTPBearer()
 
@@ -15,13 +18,6 @@ pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
 )
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY is not configured")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30 # After 30 minutes, the token will expire and the user will need to log in again to get a new token.
-REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 # Function to hash a password during registration or password change
 def hash_password(password: str) -> str:
