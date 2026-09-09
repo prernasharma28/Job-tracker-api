@@ -1,20 +1,19 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from enum import Enum
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 class UserCreate(BaseModel):
-    email: str 
+    email: EmailStr
     password: str
 
 class UserResponse(BaseModel):
     id: int
-    email : str # do not add password schema bcz we dont want to expose password in response
+    email: str  # do not add password schema bcz we dont want to expose password in response
     created_at: datetime
-
 
 class ApplicationStatsResponse(BaseModel):
     total_applications: int
@@ -22,7 +21,7 @@ class ApplicationStatsResponse(BaseModel):
     company_counts: dict[str, int]
 
 class SortOrder(str, Enum):
-    ASC = "asc",
+    ASC = "asc"
     DSC = "dsc"
 
 class ApplicationStatus(str, Enum):
@@ -31,12 +30,12 @@ class ApplicationStatus(str, Enum):
     REJECTED = "Rejected"
     OFFER = "Offer"
 
-class ApplicationRequest(BaseModel): # Pydantic model for the request applications table
-    company: str = Field(min_length=1, max_length=100) # Company name must be between 1 and 100 characters
-    role: str = Field(min_length=1, max_length=100) # Role name must be between 1 and 100 characters
-    status: ApplicationStatus # Status must be one of the predefined values
+class ApplicationRequest(BaseModel):  # Pydantic model for the request applications table
+    company: str = Field(min_length=1, max_length=100)  # Company name must be between 1 and 100 characters
+    role: str = Field(min_length=1, max_length=100)  # Role name must be between 1 and 100 characters
+    status: ApplicationStatus  # Status must be one of the predefined values
 
-class ApplicationResponse(BaseModel): # Pydantic model for the response applications table
+class ApplicationResponse(BaseModel):  # Pydantic model for the response applications table
     id: int
     company: str
     role: str
@@ -45,5 +44,5 @@ class ApplicationResponse(BaseModel): # Pydantic model for the response applicat
     updated_at: datetime
 
     model_config = {
-        "from_attributes": True # Create a response model by reading the attributes from this object.
+        "from_attributes": True  # Create a response model by reading the attributes from this object.
     }

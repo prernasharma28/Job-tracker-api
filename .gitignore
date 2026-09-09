@@ -5,3 +5,4 @@ __pycache__/
 .idea/
 .vscode/
 job_tracker.db
+test_job_tracker.db
