@@ -591,3 +591,291 @@ def test_create_application_invalid_status(client):
     assert response.status_code == 422
 
 
+# Test getting a non-existent application
+def test_get_nonexistent_application(client):
+    # Register a user
+    register_response = client.post(
+        "/auth/register",
+        json={
+            "email": "nonexistent@example.com",
+            "password": "password123"
+        }
+    )
+
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+    "/auth/login",
+    json={
+        "email": "nonexistent@example.com",
+        "password": "password123"
+    })
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    # Try to get a non-existent application
+    response = client.get(
+        "/applications/9999",  # Assuming this ID does not exist
+        headers={"Authorization": f"Bearer {access_token}"}
+        )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": "Application not found",
+        "status_code": 404
+    }
+
+
+# Test getting an application with an invalid ID (non-integer)
+def test_get_application_with_invalid_id(client):
+    # Register a user
+    client.post('/auth/register', json={
+        "email": "invalidid@example.com",
+        "password": "password123"
+    })
+
+    # Login
+    login_response = client.post('/auth/login', json={
+        "email": "invalidid@example.com",
+        "password": "password123"
+    })
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    # Try to access an application using a non-integer ID
+    response = client.get(
+        "/applications/abc",
+        headers={
+            "Authorization": f"Bearer {access_token}"
+        }
+    )
+
+    assert response.status_code == 422
+
+
+# Test getting applications with an invalid sort_by value
+def test_get_applications_invalid_sort_by(client):
+    # Register a user
+    client.post('/auth/register', json={
+        "email": "invalidsort@example.com",
+        "password": "password123"
+    })
+
+    # Login
+    login_response = client.post('/auth/login', json={
+        "email": "invalidsort@example.com",
+        "password": "password123"
+    })
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    # Try to sort applications using an invalid field
+    response = client.get(
+        "/applications?sort_by=invalid_field",
+        headers={
+            "Authorization": f"Bearer {access_token}"
+        }
+    )
+
+    assert response.status_code == 400
+
+
+# Test pagination validation
+def test_get_applications_invalid_pagination(client):
+    # Register a user
+    client.post('/auth/register', json={
+        "email": "pagination@example.com",
+        "password": "password123"
+    })
+
+    # Login
+    login_response = client.post('/auth/login', json={
+        "email": "pagination@example.com",
+        "password": "password123"
+    })
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    # Page cannot be 0
+    response = client.get(
+        "/applications?page=0",
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+    # Limit cannot be 0
+    response = client.get(
+        "/applications?limit=0",
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+    # Limit cannot be greater than 100
+    response = client.get(
+        "/applications?limit=101",
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+
+# Test update application with invalid data
+def test_update_application_invalid_data(client):
+    # Register a user
+    client.post('/auth/register', json={
+        "email": "updatevalidation@example.com",
+        "password": "password123"
+    })
+
+    # Login
+    login_response = client.post('/auth/login', json={
+        "email": "updatevalidation@example.com",
+        "password": "password123"
+    })
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    # Create an application first
+    create_response = client.post(
+        "/applications",
+        json={
+            "company": "Google",
+            "role": "Software Engineer",
+            "status": "Applied"
+        },
+        headers=headers
+    )
+
+    assert create_response.status_code == 201
+
+    application_id = create_response.json()["id"]
+
+    # Try to update with an invalid company
+    response = client.put(
+        f"/applications/{application_id}",
+        json={
+            "company": "",
+            "role": "Software Engineer",
+            "status": "Applied"
+        },
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+    # Try to update with an invalid role
+    response = client.put(
+        f"/applications/{application_id}",
+        json={
+            "company": "Google",
+            "role": "",
+            "status": "Applied"
+        },
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+    # Try to update with an invalid status
+    response = client.put(
+        f"/applications/{application_id}",
+        json={
+            "company": "Google",
+            "role": "Software Engineer",
+            "status": "InvalidStatus"
+        },
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+
+# Test updating a non-existent application
+def test_update_nonexistent_application(client):
+    # Register a user
+    client.post('/auth/register', json={
+        "email": "updatenonexistent@example.com",
+        "password": "password123"
+    })
+
+    # Login
+    login_response = client.post('/auth/login', json={
+        "email": "updatenonexistent@example.com",
+        "password": "password123"
+    })
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    # Try to update a non-existent application
+    response = client.put(
+        "/applications/9999",
+        json={
+            "company": "Google",
+            "role": "Software Engineer",
+            "status": "Applied"
+        },
+        headers={
+            "Authorization": f"Bearer {access_token}"
+        }
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": "Application not found",
+        "status_code": 404
+    }
+
+
+# Test deleting a non-existent application
+def test_delete_nonexistent_application(client):
+    # Register a user
+    client.post('/auth/register', json={
+        "email": "deletenonexistent@example.com",
+        "password": "password123"
+    })
+
+    # Login
+    login_response = client.post('/auth/login', json={
+        "email": "deletenonexistent@example.com",
+        "password": "password123"
+    })
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    # Try to delete a non-existent application
+    response = client.delete(
+        "/applications/9999",
+        headers={
+            "Authorization": f"Bearer {access_token}"
+        }
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": "Application not found",
+        "status_code": 404
+    }
