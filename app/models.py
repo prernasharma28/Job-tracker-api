@@ -6,7 +6,7 @@ from .database import Base
 class ApplicationDB(Base): # SQLAlchemy model for the applications table
     __tablename__ = "applications"
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False) # Foreign key to the users table
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True) # Foreign key to the users table
     id = Column(Integer, primary_key=True, index=True) # Every application will have a unique ID
     company = Column(String)
     role = Column(String)
@@ -31,7 +31,7 @@ class RefreshTokenDB(Base): # SQLAlchemy model for the refresh_tokens table
     __tablename__ = "refresh_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     token = Column(String, nullable=False, unique=True)
     expires_at = Column(DateTime, nullable=False)
     revoked = Column(Boolean, default=False, nullable=False)
