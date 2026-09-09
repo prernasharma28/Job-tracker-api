@@ -21,7 +21,8 @@ def get_db():
         db.close()
 
 
-@router.post("", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED, summary="Create a new job application",
+    description="Create a new job application for the currently authenticated user.")
 def create_application(
     application: ApplicationRequest,
     current_user=Depends(get_current_user),
@@ -41,16 +42,45 @@ def create_application(
     return new_application
 
 
-@router.get("", response_model=list[ApplicationResponse])
+@router.get("", response_model=list[ApplicationResponse], summary="Get job applications",
+    description="Retrieve a list of job applications for the currently authenticated user."
+)
 def get_applications(
-    status: ApplicationStatus | None = None,
-    company: str | None = None,
-    role: str | None = None,
-    search: str | None = None,
-    sort_by: str | None = None,
-    order: SortOrder | None = SortOrder.ASC,
-    page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
+    page: int = Query(
+    1,
+    ge=1,
+    description="Page number. Must be greater than or equal to 1."
+    ),
+    limit: int = Query(
+        10,
+        ge=1,
+        le=100,
+        description="Number of applications per page. Must be between 1 and 100."
+    ),
+    status: ApplicationStatus | None = Query(
+        None,
+        description="Filter applications by application status."
+    ),
+    company: str | None = Query(
+        None,
+        description="Filter applications by company name."
+    ),
+    role: str | None = Query(
+        None,
+        description="Filter applications by job role."
+    ),
+    search: str | None = Query(
+        None,
+        description="Search for applications by company or job role."
+    ),
+    sort_by: str | None = Query(
+        None,
+        description="Sort by: id, company, role, status, or created_at."
+    ),
+    order: SortOrder = Query(
+        SortOrder.ASC,
+        description="Sort order: ascending or descending."
+    ),
     current_user=Depends(get_current_user),
     db=Depends(get_db)
 ):
@@ -104,7 +134,9 @@ def get_applications(
 
     return query.all()
 
-@router.get("/stats", response_model=ApplicationStatsResponse)
+@router.get("/stats", response_model=ApplicationStatsResponse, summary="Get job application statistics",
+    description="Retrieve statistics about job applications for the currently authenticated user, including total applications, counts by status, and counts by company."
+)
 def get_application_stats(
     current_user=Depends(get_current_user),
     db=Depends(get_db)
@@ -133,7 +165,13 @@ def get_application_stats(
         "company_counts": dict(company_counts)  
     }
 
-@router.get("/{application_id}", response_model=ApplicationResponse)
+@router.get("/{application_id}", response_model=ApplicationResponse, summary="Get a specific job application",
+    description="Retrieve a specific job application by its ID for the currently authenticated user.",
+    responses={
+        404: {"description": "Application not found"},
+        422: {"description": "Invalid application ID"},
+    }
+)
 def get_application(
     application_id: int,
     current_user=Depends(get_current_user),
@@ -150,7 +188,12 @@ def get_application(
     return application
 
 
-@router.put("/{application_id}", response_model=ApplicationResponse)
+@router.put("/{application_id}", response_model=ApplicationResponse, summary="Update a specific job application",
+    description="Update a specific job application by its ID for the currently authenticated user.",
+    responses={
+        404: {"description": "Application not found"},
+        422: {"description": "Invalid application ID"},
+    })
 def update_application(
     application_id: int,
     application: ApplicationRequest,
@@ -174,7 +217,13 @@ def update_application(
     return existing_application
 
 
-@router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a specific job application",
+    description="Delete a specific job application by its ID for the currently authenticated user.",
+    responses={
+        404: {"description": "Application not found"},
+        422: {"description": "Invalid application ID"},
+    }
+)
 def delete_application(
     application_id: int,
     db: Session = Depends(get_db),
