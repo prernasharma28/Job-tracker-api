@@ -5,7 +5,11 @@ from .database import engine, Base
 from .routers import applications, auth
 from .exceptions import ApplicationNotFoundException
 
-app = FastAPI()
+app = FastAPI(
+    title="Job Tracker API",
+    description="A REST API for managing job applications with authentication, filtering, search, sorting, pagination, statistics, and refresh token authentication.",
+    version="1.0.0"
+)
 
 @app.exception_handler(ApplicationNotFoundException)
 def application_not_found_exception_handler(request: Request, exc: ApplicationNotFoundException):

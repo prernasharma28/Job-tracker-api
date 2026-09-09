@@ -29,7 +29,8 @@ def get_db():
         db.close()
 
 
-@router.post("/register", response_model=UserResponse, status_code=201)
+@router.post("/register", response_model=UserResponse, status_code=201, summary="Register a new user",
+    description="Register a new user with an email and password.")
 def register_user(user: UserCreate, db=Depends(get_db)):
 
     # Check if the user already exists
@@ -55,7 +56,8 @@ def register_user(user: UserCreate, db=Depends(get_db)):
     return new_user
 
 
-@router.post("/login")
+@router.post("/login", summary="Login a user",
+    description="Login a user with an email and password.")
 def login_user(user: UserCreate, db=Depends(get_db)):
 
     existing_user = db.query(UserDB).filter(
@@ -98,7 +100,8 @@ def login_user(user: UserCreate, db=Depends(get_db)):
     }
 
 
-@router.post("/refresh")
+@router.post("/refresh", summary="Refresh access token",
+    description="Refresh the access token using a valid refresh token.")
 def refresh_access_token(request: RefreshTokenRequest, db=Depends(get_db)):
 
     payload = verify_refresh_token(request.refresh_token)
@@ -136,7 +139,8 @@ def refresh_access_token(request: RefreshTokenRequest, db=Depends(get_db)):
     }
 
 
-@router.post("/logout")
+@router.post("/logout", summary="Logout a user",
+    description="Logout a user and invalidate their refresh token.")
 def logout_user(
     request: RefreshTokenRequest,
     db=Depends(get_db)
