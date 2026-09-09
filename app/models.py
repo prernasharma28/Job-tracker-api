@@ -10,6 +10,7 @@ class ApplicationDB(Base): # SQLAlchemy model for the applications table
     id = Column(Integer, primary_key=True, index=True) # Every application will have a unique ID
     company = Column(String)
     role = Column(String)
+    location = Column(String, nullable=True)
     status = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(
