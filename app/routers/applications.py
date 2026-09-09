@@ -124,11 +124,13 @@ def get_applications(
                 status_code=400,
                 detail=f"Invalid sort_by value: {sort_by}. Valid values are: {', '.join(sort_columns.keys())}"
             )
-        
+
         if order == "desc":
             query = query.order_by(sort_column.desc())
         else:
             query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(ApplicationDB.id.asc())
 
     query = query.offset(offset).limit(limit)
 
