@@ -101,6 +101,19 @@ def test_duplicate_registration(client):
     assert response.status_code == 400
 
 
+# Test user registration with short password
+def test_register_with_short_password(client):
+    response = client.post(
+        "/auth/register",
+        json={
+            "email": "shortpassword@example.com",
+            "password": "1234567"
+        }
+    )
+
+    assert response.status_code == 201
+
+
 # Test accessing protected applications endpoint without authentication
 def test_get_applications_without_token(client):
     response = client.get("/applications")
