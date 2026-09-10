@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - feature/workflows
-
   pull_request:
     branches:
       - main
@@ -32,6 +31,9 @@ jobs:
 
       - name: Run tests
         run: python -m pytest
+
+      - name: Apply database migrations
+        run: alembic upgrade head
 
       - name: Check database migrations
         run: alembic check
