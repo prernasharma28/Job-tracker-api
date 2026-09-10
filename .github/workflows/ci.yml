@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - feature/workflows
+      - main
   pull_request:
     branches:
       - main
