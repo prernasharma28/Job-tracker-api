@@ -1,116 +1,84 @@
-# Job Tracker API
+# 🚀 Job Tracker API
 
-A RESTful backend API for managing and tracking job applications, built with **FastAPI** and **SQLAlchemy**.
+A backend REST API for managing job applications, built with **FastAPI** and **SQLAlchemy**.
 
-The project includes user authentication, JWT access and refresh tokens, CRUD operations, filtering, search, sorting, pagination, application statistics, validation, database migrations, automated testing, logging, and GitHub Actions CI.
+The project includes authentication, CRUD operations, filtering, search, sorting, pagination, application statistics, database migrations, automated testing, logging, and GitHub Actions CI.
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
 ### 🔐 Authentication
 
 * User registration and login
-* Password hashing with bcrypt
-* JWT-based authentication
-* Access and refresh tokens
-* Refresh token validation and revocation
-* Logout functionality
-* Protected application endpoints
+* JWT access tokens
+* Refresh token support
+* Logout with refresh-token revocation
+* Password hashing using bcrypt
+* Protected application APIs
 
-### 💼 Job Application Management
+### 💼 Job Applications
 
-* Create job applications
-* View applications
-* View a specific application
-* Update applications
-* Delete applications
+* Create, read, update, and delete applications
 * User-specific application data
+* Application status management:
 
-### 🔎 Filtering, Search & Sorting
+  * `Applied`
+  * `Interview`
+  * `Rejected`
+  * `Offer`
 
-* Filter by application status
-* Filter by company
-* Filter by role
+### 🔎 Application Management
+
+* Filter by status, company, and role
 * Search by company or role
-* Sort by:
+* Sort by ID, company, role, status, or creation date
+* Pagination using page and limit
+* Combine filters, search, sorting, and pagination
 
-  * ID
-  * Company
-  * Role
-  * Status
-  * Created date
-* Ascending and descending ordering
-
-### 📄 Pagination
-
-* Page-based pagination
-* Configurable page size
-* Maximum limit validation
-
-### 📊 Application Statistics
+### 📊 Statistics
 
 * Total number of applications
 * Application count by status
 * Application count by company
 
-### 🛡️ Validation & Error Handling
+### 🧪 Testing & Quality
 
-* Request validation with Pydantic
-* Email validation
-* Password length validation
-* Application field validation
-* Custom application-not-found handling
-* Global exception handling
-* Appropriate HTTP status codes
+* Automated tests with Pytest
+* Authentication and application API testing
+* Input validation using Pydantic
+* Custom exception handling
+* Global error handling
+* Database migration validation
 
-### 🗄️ Database & Migrations
+### ⚙️ Engineering Practices
 
-* SQLite database
 * SQLAlchemy ORM
 * Alembic database migrations
-* Migration consistency checks
-
-### 🧪 Testing
-
-* Automated tests with pytest
-* Authentication test coverage
-* Test database configuration
-
-### 📋 Logging
-
-* Request and response logging
-* Application creation, update, and deletion logs
-* Authentication event logging
-* Failed login logging
-* Unexpected error logging
-
-### ⚙️ CI
-
-GitHub Actions automatically:
-
-* Installs project dependencies
-* Applies database migrations
-* Runs the test suite
-* Checks Alembic migration consistency
+* Environment-based configuration
+* Structured logging
+* GitHub Actions CI
+* Clean project structure
+* API documentation with Swagger UI
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Technology     | Purpose                    |
-| -------------- | -------------------------- |
-| Python         | Programming language       |
-| FastAPI        | Web framework              |
-| SQLAlchemy     | ORM / database interaction |
-| SQLite         | Database                   |
-| Pydantic       | Data validation            |
-| JWT            | Authentication             |
-| bcrypt         | Password hashing           |
-| Alembic        | Database migrations        |
-| pytest         | Testing                    |
-| GitHub Actions | CI                         |
-| Uvicorn        | ASGI server                |
+| Technology     | Purpose                     |
+| -------------- | --------------------------- |
+| Python         | Programming language        |
+| FastAPI        | Backend framework           |
+| Uvicorn        | ASGI server                 |
+| SQLAlchemy     | ORM                         |
+| SQLite         | Database                    |
+| Pydantic       | Request/response validation |
+| JWT            | Authentication              |
+| bcrypt         | Password hashing            |
+| Alembic        | Database migrations         |
+| Pytest         | Automated testing           |
+| HTTPX          | API testing                 |
+| GitHub Actions | CI                          |
 
 ---
 
@@ -155,7 +123,7 @@ job-tracker-api/
 
 ---
 
-## 🔑 Authentication Flow
+## 🔐 Authentication Flow
 
 The API uses JWT-based authentication.
 
@@ -166,33 +134,33 @@ Login
    ↓
 Access Token + Refresh Token
    ↓
-Access Token
+Access protected APIs
    ↓
-Protected API Endpoints
-```
-
-When the access token expires:
-
-```text
+Access Token expires
+   ↓
 Refresh Token
-      ↓
-POST /auth/refresh
-      ↓
+   ↓
 New Access Token
 ```
 
-Refresh tokens are stored in the database and can be revoked during logout.
+Protected application endpoints require:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+Refresh tokens can also be revoked during logout.
 
 ---
 
-## 🔌 API Endpoints
+## 📡 API Endpoints
 
 ### Authentication
 
 | Method | Endpoint         | Description                 |
 | ------ | ---------------- | --------------------------- |
 | POST   | `/auth/register` | Register a new user         |
-| POST   | `/auth/login`    | Login                       |
+| POST   | `/auth/login`    | Login and receive tokens    |
 | POST   | `/auth/refresh`  | Generate a new access token |
 | POST   | `/auth/logout`   | Revoke refresh token        |
 
@@ -200,22 +168,23 @@ Refresh tokens are stored in the database and can be revoked during logout.
 
 | Method | Endpoint              | Description                |
 | ------ | --------------------- | -------------------------- |
-| POST   | `/applications`       | Create an application      |
+| POST   | `/applications`       | Create application         |
 | GET    | `/applications`       | Get applications           |
 | GET    | `/applications/stats` | Get application statistics |
-| GET    | `/applications/{id}`  | Get one application        |
-| PUT    | `/applications/{id}`  | Update an application      |
-| DELETE | `/applications/{id}`  | Delete an application      |
+| GET    | `/applications/{id}`  | Get application by ID      |
+| PUT    | `/applications/{id}`  | Update application         |
+| DELETE | `/applications/{id}`  | Delete application         |
 
 ---
 
-## 🔎 Example: Get Applications
+## 🔎 API Examples
+
+### Get Applications
 
 Basic request:
 
 ```http
 GET /applications
-
 Authorization: Bearer <access_token>
 ```
 
@@ -223,7 +192,6 @@ With pagination:
 
 ```http
 GET /applications?page=1&limit=10
-
 Authorization: Bearer <access_token>
 ```
 
@@ -231,7 +199,6 @@ With filtering:
 
 ```http
 GET /applications?status=Interview&company=Google
-
 Authorization: Bearer <access_token>
 ```
 
@@ -239,7 +206,6 @@ With search:
 
 ```http
 GET /applications?search=software
-
 Authorization: Bearer <access_token>
 ```
 
@@ -247,7 +213,6 @@ With sorting:
 
 ```http
 GET /applications?sort_by=created_at&order=desc
-
 Authorization: Bearer <access_token>
 ```
 
@@ -255,11 +220,10 @@ Filters, search, sorting, and pagination can also be combined.
 
 ---
 
-## 📊 Example: Application Statistics
+## 📊 Application Statistics
 
 ```http
 GET /applications/stats
-
 Authorization: Bearer <access_token>
 ```
 
@@ -286,18 +250,10 @@ Example response:
 
 ## 🧪 Running Tests
 
-Install the project dependencies:
+Install the dependencies:
 
 ```bash
 pip install -r requirements.txt
-```
-
-Set the required environment variable:
-
-### PowerShell
-
-```powershell
-$env:SECRET_KEY="your-test-secret-key"
 ```
 
 Run the test suite:
@@ -306,72 +262,89 @@ Run the test suite:
 python -m pytest
 ```
 
-For a shorter output:
-
-```bash
-python -m pytest -q
-```
+The project uses **Pytest** and **HTTPX** for automated API testing.
 
 ---
 
 ## 🗄️ Database Migrations
 
-Apply all migrations:
+The project uses **Alembic** for database schema migrations.
+
+Apply migrations:
 
 ```bash
 alembic upgrade head
 ```
 
-Check whether the database schema is up to date:
-
-```bash
-alembic check
-```
-
-View the current migration:
+Check migration status:
 
 ```bash
 alembic current
 ```
 
+Verify that migrations are up to date:
+
+```bash
+alembic check
+```
+
+Create a new migration after a model change:
+
+```bash
+alembic revision --autogenerate -m "describe change"
+```
+
 ---
 
-## ▶️ Running the API Locally
+## ▶️ Run Locally
 
-Clone the repository and enter the project directory:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/prernasharma28/Job-tracker-api.git
 cd Job-tracker-api
 ```
 
-Create and activate a virtual environment:
+### 2. Create a virtual environment
 
-### Windows PowerShell
+Windows:
 
 ```powershell
 python -m venv venv
-
-.\venv\Scripts\Activate.ps1
+venv\Scripts\activate
 ```
 
-Install dependencies:
+### 3. Install dependencies
 
-```powershell
+```bash
 pip install -r requirements.txt
 ```
 
-Create a `.env` file based on `.env.example` and configure your secret key.
+### 4. Configure environment variables
 
-Run the database migrations:
+Create a `.env` file based on `.env.example`.
 
-```powershell
+Example:
+
+```env
+DATABASE_URL=sqlite:///./job_tracker.db
+SECRET_KEY=your-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+```
+
+> Never commit the `.env` file or real secrets to GitHub.
+
+### 5. Apply database migrations
+
+```bash
 alembic upgrade head
 ```
 
-Start the API:
+### 6. Start the API
 
-```powershell
+```bash
 uvicorn app.main:app --reload
 ```
 
@@ -383,7 +356,7 @@ http://127.0.0.1:8000
 
 ---
 
-## 📚 API Documentation
+## 📖 API Documentation
 
 FastAPI automatically provides interactive API documentation.
 
@@ -399,57 +372,57 @@ http://127.0.0.1:8000/docs
 http://127.0.0.1:8000/redoc
 ```
 
-Swagger UI can be used to explore endpoints and test API requests directly from the browser.
+Swagger UI can be used to test the API endpoints directly.
 
 ---
 
-## ⚙️ GitHub Actions
+## 🔄 GitHub Actions
 
 The project uses GitHub Actions for continuous integration.
 
-On pushes to `main` and pull requests targeting `main`, the workflow:
+The CI workflow:
 
 ```text
-Checkout code
-      ↓
-Set up Python
-      ↓
+Push / Pull Request
+        ↓
 Install dependencies
-      ↓
-Run database migrations
-      ↓
-Run tests
-      ↓
-Check migrations
+        ↓
+Apply database migrations
+        ↓
+Run Pytest
+        ↓
+Check Alembic migrations
 ```
 
-This helps ensure that changes do not break the application or database migration state.
+Workflow file:
+
+```text
+.github/workflows/ci.yml
+```
+
+The CI pipeline runs automatically for pushes and pull requests targeting `main`.
 
 ---
 
-## 🔒 Environment Variables
+## 📝 Environment Variables
 
-The application uses environment variables for configuration.
+The application configuration is controlled through environment variables.
 
-Example:
+| Variable                      | Description             |
+| ----------------------------- | ----------------------- |
+| `DATABASE_URL`                | Database connection URL |
+| `SECRET_KEY`                  | JWT signing secret      |
+| `ALGORITHM`                   | JWT algorithm           |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token expiry     |
+| `REFRESH_TOKEN_EXPIRE_DAYS`   | Refresh token expiry    |
 
-```env
-DATABASE_URL=sqlite:///./job_tracker.db
-SECRET_KEY=your-secret-key
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-```
+For local development, use `.env`.
 
-**Never commit your actual `.env` file or production secrets to GitHub.**
-
-Use `.env.example` as a template.
+For CI, required values are provided through GitHub Actions environment configuration.
 
 ---
 
 ## 🏗️ Architecture
-
-The main application flow is:
 
 ```mermaid
 flowchart TD
@@ -459,6 +432,7 @@ flowchart TD
     API --> Apps[Applications Router]
 
     Auth --> Security[JWT Authentication & Security]
+
     Apps --> CRUD[CRUD Operations]
     Apps --> Features[Filtering / Search / Sorting / Pagination / Statistics]
 
@@ -476,54 +450,66 @@ flowchart TD
     CI -.-> Migrations
 ```
 
-The application is organized into separate layers for:
+### Request Flow
 
-* API routing
-* Request/response schemas
-* Database models
-* Authentication and security
-* Database configuration
-* Error handling
-* Logging
+```text
+Client
+  ↓
+FastAPI Router
+  ↓
+Validation / Authentication
+  ↓
+Business Logic
+  ↓
+SQLAlchemy ORM
+  ↓
+SQLite
+```
 
 ---
 
-## 📈 What This Project Demonstrates
+## 📌 What This Project Demonstrates
 
-This project demonstrates practical backend development skills including:
+This project was built to practice and demonstrate practical backend engineering concepts:
 
 * REST API development
 * FastAPI
+* Python backend development
 * Authentication and authorization
 * JWT access and refresh tokens
+* Password hashing
+* CRUD operations
 * SQLAlchemy ORM
 * Database design
-* CRUD operations
-* Filtering and search
-* Sorting and pagination
-* Input validation
-* Exception handling
 * Database migrations
+* Input validation
+* Filtering and searching
+* Sorting
+* Pagination
+* Aggregation and statistics
+* Exception handling
 * Automated testing
 * Logging
-* Continuous integration
-* Git and GitHub workflow
+* Environment-based configuration
+* CI with GitHub Actions
+* Clean project organization
 
 ---
 
-## 🔮 Future Improvements
+## 🚀 Future Improvements
 
-Potential future improvements include:
+Possible future enhancements include:
 
-* PostgreSQL for production-scale relational storage
-* Redis-based caching
-* Background job processing
+* PostgreSQL
+* Redis caching
+* Background jobs
 * Rate limiting
-* Advanced monitoring
-* Containerization
+* Email notifications
+* Advanced analytics
 * Cloud deployment
+* Horizontal scaling
 
-These are intentionally kept outside the current project scope.
+These are potential extensions for learning and scalability rather than requirements of the current project.
 
 ---
 
@@ -534,5 +520,4 @@ These are intentionally kept outside the current project scope.
 Software Engineer | Problem Solving
 
 GitHub:
-
 https://github.com/prernasharma28
