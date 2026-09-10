@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..database import SessionLocal
@@ -13,6 +15,7 @@ from ..security import (
     REFRESH_TOKEN_EXPIRE_DAYS
 )
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/auth",
@@ -53,6 +56,11 @@ def register_user(user: UserCreate, db=Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
+    logger.info(
+        "User registered: user_id=%s",
+        new_user.id,
+    )
+
     return new_user
 
 
@@ -68,6 +76,10 @@ def login_user(user: UserCreate, db=Depends(get_db)):
         user.password,
         existing_user.password_hash
     ):
+        logger.warning(
+            "Login failed: invalid credentials"
+        )
+
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
@@ -92,6 +104,11 @@ def login_user(user: UserCreate, db=Depends(get_db)):
 
     db.add(refresh_token_record)
     db.commit()
+
+    logger.info(
+        "User logged in: user_id=%s",
+        existing_user.id,
+    )
 
     return {
         "access_token": access_token,
@@ -133,6 +150,11 @@ def refresh_access_token(request: RefreshTokenRequest, db=Depends(get_db)):
         "email": payload["email"]
     })
 
+    logger.info(
+        "Access token refreshed: user_id=%s",
+        payload["user_id"],
+    )
+
     return {
         "access_token": new_access_token,
         "token_type": "bearer"
@@ -163,6 +185,11 @@ def logout_user(
 
     refresh_token_record.revoked = True
     db.commit()
+
+    logger.info(
+        "User logged out: user_id=%s",
+        refresh_token_record.user_id,
+    )
 
     return {
         "message": "Successfully logged out"

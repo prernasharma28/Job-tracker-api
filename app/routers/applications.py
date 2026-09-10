@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from ..database import SessionLocal
@@ -6,6 +7,8 @@ from ..schemas import ApplicationRequest, ApplicationResponse, ApplicationStatus
 from sqlalchemy import or_, func
 from app.security import get_current_user
 from app.exceptions import ApplicationNotFoundException
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/applications",
@@ -38,6 +41,14 @@ def create_application(
     db.add(new_application)
     db.commit()
     db.refresh(new_application)
+
+    logger.info(
+        "Application created: user_id=%s, application_id=%s, company=%s, role=%s",
+        current_user["user_id"],
+        new_application.id,
+        new_application.company,
+        new_application.role,
+    )
 
     return new_application
 
@@ -216,6 +227,12 @@ def update_application(
     db.commit()
     db.refresh(existing_application)
 
+    logger.info(
+        "Application updated: user_id=%s, application_id=%s",
+        current_user["user_id"],
+        application_id,
+    )
+
     return existing_application
 
 
@@ -241,3 +258,9 @@ def delete_application(
 
     db.delete(application)
     db.commit()
+
+    logger.info(
+        "Application deleted: user_id=%s, application_id=%s",
+        current_user["user_id"],
+        application_id,
+    )
