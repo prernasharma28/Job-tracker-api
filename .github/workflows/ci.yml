@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - feature/workflows
+      - feature/ci-cd
   pull_request:
     branches:
       - main
@@ -29,11 +29,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
-        run: python -m pytest
-
       - name: Apply database migrations
         run: alembic upgrade head
+
+      - name: Run tests
+        run: python -m pytest
 
       - name: Check database migrations
         run: alembic check
